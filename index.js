@@ -49,40 +49,52 @@ server.get('/api/actions/:id', (request, response) => {
         });
 });
 
-server.post('/api/actions', (request, response) => {
-    const project_id = request.body.project_id;
+server.post('/api/actions/project/:projectId', (request, response) => {
+    console.log(request.params);
+    const projectId = request.params.projectId;
+
     const description = request.body.description;
     const completed = request.body.completed;
     const notes = request.body.notes;
-    const newAction = { project_id, description, notes, completed };
+    console.log(request.body);
+
+    if (completed === null) {
+        completed = false;
+    }
 
     //NEED TO REQUIRE THAT project_id = an id for a project
-    if (!newAction.project_id || !newAction.description || newAction.completed === null) {
+    if (!description) {
         return response
             .status(400)
-            .send({ Error: "Please enter a project_id, description, or completion value for the action" });
-    } else if (newAction.description.length > 128) {
+            .send({ Error: "Please enter a project_id or description for the action" });
+    } else if (description.length > 128) {
         return response
             .status(400)
             .send({ Error: "Action description must be 128 or less characters" });
     }
 
-    actionDb
-        .insert(newAction)
-        .then(actionID => {
-            const { id } = actionID;
+    projectDb.get(projectId)
+        .then(project => {
+            if (!project) {
+                return response
+                    .status(404)
+                    .send({ ERROR: "There is no project with that id" })
+            }
+
+            const newAction = { "project_id": projectId, "description": description, "notes": notes, "completed": completed };
+
             actionDb
-                .get(id)
+                .insert(newAction)
                 .then(action => {
                     return response
                         .status(201)
                         .json(action);
+                })
+                .catch(() => {
+                    return response
+                        .status(500)
+                        .json({ Error: "There was an error while saving the action" })
                 });
-        })
-        .catch(() => {
-            return response
-                .status(500)
-                .json({ Error: "There was an error while saving the action" })
         });
 });
 
