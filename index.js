@@ -55,16 +55,17 @@ server.get('/api/actions/:id', (request, response) => {
 });
 
 server.post('/api/actions', (request, response) => {
-    const projectID = request.projectID;
-    const description = request.description;
-    const completed = request.completed;
-    const notes = request.notes;
-    const newAction = { projectID, description, notes, completed };
+    const project_id = request.body.project_id;
+    const description = request.body.description;
+    const completed = request.body.completed;
+    const notes = request.body.notes;
+    const newAction = { project_id, description, notes, completed };
 
-    if (!newAction.projectID || !newAction.description || !newAction.completed) {
+    //NEED TO REQUIRE THAT project_id = an id for a project
+    if (!newAction.project_id || !newAction.description || newAction.completed === null) {
         return response
             .status(400)
-            .send({ Error: "Please enter a projectID, description, or completion value for the action" });
+            .send({ Error: "Please enter a project_id, description, or completion value for the action" });
     } else if (newAction.description.length > 128) {
         return response
             .status(400)
@@ -92,20 +93,25 @@ server.post('/api/actions', (request, response) => {
 
 server.put('/api/actions/:id', (request, response) => {
     const id = request.params.id;
-    const projectID = request.projectID;
-    const description = request.description;
-    const completed = request.completed;
-    const notes = request.notes;
-    const updatedAction = { projectID, description, notes, completed };
+    const project_id = request.body.project_id;
+    const description = request.body.description;
+    const completed = request.body.completed;
+    const notes = request.body.notes;
+    const updatedAction = { project_id, description, notes, completed };
 
+    //NEED TO REQUIRE THAT project_id = an id for a project
     if (!id) {
         return response
             .status(404)
             .send({ Error: `Action with the following ID does not exist: ${id}` });
-    } else if (!updatedAction.name) {
+    } else if (!updatedAction.project_id || !updatedAction.description || updatedAction.completed === null) {
         return response
             .status(400)
-            .send({ Error: "Please enter a name for the action" });
+            .send({ Error: "Please enter a project_id, description, or completion value for the action" });
+    } else if (updatedAction.description.length > 128) {
+        return response
+            .status(400)
+            .send({ Error: "Action description must be 128 or less characters" });
     }
 
     actionDb
