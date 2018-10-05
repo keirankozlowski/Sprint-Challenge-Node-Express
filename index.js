@@ -205,15 +205,16 @@ server.get('/api/project/:id/actions', (request, response) => {
         });
 });
 
-server.post('/api/project', (request, response) => {
-    const projectID = request.body.projectID;
-    const text = request.body.text;
-    const newProject = { projectID, text };
+server.post('/api/projects', (request, response) => {
+    const name = request.body.name;
+    const description = request.body.description;
+    const completed = request.body.completed;
+    const newProject = { name, description, completed };
 
-    if (!newProject.projectID || !newProject.text) {
+    if (!newProject.name || !newProject.description) {
         return response
             .status(400)
-            .send({ Error: "Missing projectID or text for the project" });
+            .send({ Error: "Missing name or description for the project" });
     }
 
     projectDb
@@ -236,17 +237,19 @@ server.post('/api/project', (request, response) => {
 
 server.put('/api/projects/:id', (request, response) => {
     const id = request.params.id;
-    const text = request.body.text;
-    const updatedProject = { text };
+    const name = request.body.name;
+    const description = request.body.description;
+    const completed = request.body.completed;
+    const updatedProject = { name, description, completed };
 
     if (!id) {
         return response
             .status(404)
             .send({ Error: `Project with the following ID does not exist: ${id}` });
-    } else if (!updatedProject.text) {
+    } else if (!updatedProject.name || !updatedProject.description) {
         return response
             .status(400)
-            .send({ Error: "Please enter text for the project" });
+            .send({ Error: "Missing name or description for the project" });
     }
 
     projectDb
