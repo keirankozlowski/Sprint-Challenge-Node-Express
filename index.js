@@ -7,11 +7,6 @@ const server = express();
 server.use(cors());
 server.use(express.json());
 
-const toCaps = (request, response, next) => {
-    request.name = request.body.name.toUpperCase();
-    next();
-};
-
 const port = 8000;
 server.listen(port, () =>
     console.log(`Server is listening to Port ${port}`)
